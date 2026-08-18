@@ -43,7 +43,8 @@ Open [http://localhost:3000](http://localhost:3000).
 
 Environment variables (see `.env`):
 
-- `DATABASE_URL` — SQLite connection string (defaults to `file:./prisma/dev.db`)
+- `DATABASE_URL` — SQLite connection string (defaults to `file:./dev.db`,
+  resolved relative to `prisma/`, i.e. `prisma/dev.db`)
 - `AUTH_SECRET` — secret used to sign session tokens (set a strong random
   value in production)
 - `NEXTAUTH_URL` — the app's public URL
