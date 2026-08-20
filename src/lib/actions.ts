@@ -2,9 +2,6 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { randomUUID } from "crypto";
-import { mkdir, writeFile } from "fs/promises";
-import path from "path";
 import bcrypt from "bcryptjs";
 import { AuthError } from "next-auth";
 import { prisma } from "@/lib/prisma";
@@ -14,8 +11,6 @@ import {
   trackSchema,
   commentSchema,
   offerSchema,
-  ALLOWED_AUDIO_TYPES,
-  MAX_AUDIO_BYTES,
 } from "@/lib/validation";
 
 export type ActionState = { error?: string; success?: boolean } | undefined;
@@ -74,11 +69,15 @@ async function requireSession() {
   return session;
 }
 
+export type CreateTrackResult = { error: string } | { trackId: string };
+
 export async function createTrack(
-  _prevState: ActionState,
   formData: FormData
-): Promise<ActionState> {
-  const session = await requireSession();
+): Promise<CreateTrackResult> {
+  const session = await auth();
+  if (!session?.user) {
+    return { error: "You must be logged in to upload a track" };
+  }
   if (session.user.role !== "ARTIST") {
     return { error: "Only artists can upload tracks" };
   }
@@ -88,30 +87,13 @@ export async function createTrack(
     description: formData.get("description") ?? "",
     genre: formData.get("genre") ?? "",
     seekingHelp: formData.get("seekingHelp") === "on",
+    audioUrl: formData.get("audioUrl"),
+    audioFileName: formData.get("audioFileName"),
   });
 
   if (!parsed.success) {
     return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
   }
-
-  const file = formData.get("audio");
-  if (!(file instanceof File) || file.size === 0) {
-    return { error: "Please choose an audio file" };
-  }
-  if (!ALLOWED_AUDIO_TYPES.includes(file.type)) {
-    return { error: "Unsupported audio format" };
-  }
-  if (file.size > MAX_AUDIO_BYTES) {
-    return { error: "File is too large (max 30MB)" };
-  }
-
-  const uploadsDir = path.join(process.cwd(), "public", "uploads");
-  await mkdir(uploadsDir, { recursive: true });
-
-  const ext = path.extname(file.name) || ".mp3";
-  const safeName = `${randomUUID()}${ext}`;
-  const buffer = Buffer.from(await file.arrayBuffer());
-  await writeFile(path.join(uploadsDir, safeName), buffer);
 
   const track = await prisma.track.create({
     data: {
@@ -119,15 +101,15 @@ export async function createTrack(
       description: parsed.data.description || null,
       genre: parsed.data.genre || null,
       seekingHelp: parsed.data.seekingHelp ?? false,
-      filePath: `/uploads/${safeName}`,
-      fileName: file.name,
+      filePath: parsed.data.audioUrl,
+      fileName: parsed.data.audioFileName,
       userId: session.user.id,
     },
   });
 
   revalidatePath("/");
   revalidatePath("/dashboard");
-  redirect(`/track/${track.id}`);
+  return { trackId: track.id };
 }
 
 export async function createComment(

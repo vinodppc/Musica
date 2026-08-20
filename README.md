@@ -27,15 +27,20 @@ collaborate.
 
 - [Next.js](https://nextjs.org) (App Router) + TypeScript
 - [Tailwind CSS](https://tailwindcss.com) for styling
-- [Prisma](https://www.prisma.io) + SQLite for the database
+- [Prisma](https://www.prisma.io) + PostgreSQL for the database
 - [NextAuth.js v5](https://authjs.dev) (credentials provider) for auth
-- Audio files are stored on disk under `public/uploads`
+- [Vercel Blob](https://vercel.com/docs/storage/vercel-blob) for audio file
+  storage, uploaded directly from the browser
 
-## Getting started
+## Getting started locally
+
+You need a Postgres database (a free local one works fine) and a Vercel Blob
+store (see [Deploying to Vercel](#deploying-to-vercel) below for the easiest
+way to get one, even for local dev).
 
 ```bash
 npm install
-npx prisma migrate dev   # creates prisma/dev.db and applies the schema
+npx prisma migrate dev   # applies the schema to your Postgres database
 npm run dev
 ```
 
@@ -43,26 +48,50 @@ Open [http://localhost:3000](http://localhost:3000).
 
 Environment variables (see `.env`):
 
-- `DATABASE_URL` — SQLite connection string (defaults to `file:./dev.db`,
-  resolved relative to `prisma/`, i.e. `prisma/dev.db`)
+- `DATABASE_URL` — Postgres connection string
 - `AUTH_SECRET` — secret used to sign session tokens (set a strong random
-  value in production)
+  value in production; generate one with `openssl rand -base64 32`)
 - `NEXTAUTH_URL` — the app's public URL
+- `BLOB_READ_WRITE_TOKEN` — Vercel Blob store token (used by `/api/upload`
+  to authorize direct-from-browser uploads)
+
+## Deploying to Vercel
+
+1. **Import the repository** at [vercel.com/new](https://vercel.com/new),
+   pointing it at this GitHub repo.
+2. **Add storage** from the project's *Storage* tab, before the first
+   deploy or any time after:
+   - **Postgres** (e.g. Neon, via Vercel's Postgres integration) — this
+     automatically sets `DATABASE_URL` (and related env vars) on the
+     project.
+   - **Blob** — this automatically sets `BLOB_READ_WRITE_TOKEN`.
+3. **Set `AUTH_SECRET` and `NEXTAUTH_URL`** manually in the project's
+   Environment Variables settings (`NEXTAUTH_URL` is your production
+   domain, e.g. `https://your-app.vercel.app`).
+4. **Deploy.** The build command (`prisma migrate deploy && next build`)
+   applies the database schema automatically on every deploy — no manual
+   migration step needed.
 
 ## Project structure
 
 - `prisma/schema.prisma` — data model (`User`, `Track`, `Comment`,
   `ProductionOffer`, `Follow`)
 - `src/lib/auth.ts` — NextAuth configuration
-- `src/lib/actions.ts` — server actions for registration, uploads, comments,
-  offers, and following
+- `src/lib/actions.ts` — server actions for registration, comments, offers,
+  and following
+- `src/app/api/upload/route.ts` — authorizes direct-to-Blob client uploads
+  (checks the signed-in user is an Artist before issuing an upload token)
+- `src/components/UploadForm.tsx` — uploads the audio file straight from
+  the browser to Vercel Blob, then calls `createTrack` with the resulting
+  URL to save the track
 - `src/app` — pages (discover feed, signup/login, upload, track detail,
   profile, dashboard)
 
 ## Notes
 
-- Uploaded audio is stored locally under `public/uploads` (30MB max per
-  file). For a production deployment, swap this for object storage (e.g. S3)
-  behind the same `createTrack` server action.
-- SQLite is used for simplicity; swap the Prisma datasource for
-  Postgres/MySQL for a multi-instance production deployment.
+- Audio uploads go straight from the browser to Vercel Blob (bypassing the
+  server), so there's no practical request-size limit from the app's own
+  infrastructure — the 30MB cap in `src/lib/validation.ts` is a product
+  choice, not a technical one.
+- Postgres is required — SQLite won't work on Vercel's serverless runtime,
+  which has no persistent local filesystem.
