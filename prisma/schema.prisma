@@ -1,0 +1,102 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ARTIST
+  PRODUCER
+}
+
+enum OfferStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+}
+
+model User {
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  role         Role     @default(ARTIST)
+  bio          String?
+  createdAt    DateTime @default(now())
+
+  tracks       Track[]
+  comments     Comment[]
+  offersSent   ProductionOffer[] @relation("OffersSent")
+  follows      Follow[]          @relation("Follower")
+  followedBy   Follow[]          @relation("Followed")
+}
+
+model Track {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  genre       String?
+  filePath    String
+  fileName    String
+  coverPath   String?
+  seekingHelp Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  comments Comment[]
+  offers   ProductionOffer[]
+
+  @@index([userId])
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  content   String
+  createdAt DateTime @default(now())
+
+  trackId String
+  track   Track  @relation(fields: [trackId], references: [id], onDelete: Cascade)
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([trackId])
+}
+
+model ProductionOffer {
+  id        String      @id @default(cuid())
+  message   String
+  status    OfferStatus @default(PENDING)
+  createdAt DateTime    @default(now())
+
+  trackId String
+  track   Track  @relation(fields: [trackId], references: [id], onDelete: Cascade)
+
+  producerId String
+  producer   User   @relation("OffersSent", fields: [producerId], references: [id], onDelete: Cascade)
+
+  @@unique([trackId, producerId])
+  @@index([trackId])
+}
+
+model Follow {
+  id String @id @default(cuid())
+
+  followerId String
+  follower   User   @relation("Follower", fields: [followerId], references: [id], onDelete: Cascade)
+
+  followedId String
+  followed   User   @relation("Followed", fields: [followedId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@unique([followerId, followedId])
+}
