@@ -12,6 +12,8 @@ export const trackSchema = z.object({
   description: z.string().trim().max(2000).optional().or(z.literal("")),
   genre: z.string().trim().max(40).optional().or(z.literal("")),
   seekingHelp: z.boolean().optional(),
+  audioUrl: z.string().trim().url("Missing uploaded audio file"),
+  audioFileName: z.string().trim().min(1).max(255),
 });
 
 export const commentSchema = z.object({

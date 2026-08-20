@@ -51,7 +51,3 @@ skills-lock.json
 # database
 /prisma/dev.db
 /prisma/dev.db-journal
-
-# user-uploaded media
-/public/uploads/*
-!/public/uploads/.gitkeep
