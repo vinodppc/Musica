@@ -5,11 +5,14 @@ import { useRouter } from "next/navigation";
 import { upload } from "@vercel/blob/client";
 import { createTrack } from "@/lib/actions";
 import { ALLOWED_AUDIO_TYPES, MAX_AUDIO_BYTES } from "@/lib/validation";
+import { input, label as labelClass, button, card } from "@/lib/ui";
+import { UploadIcon } from "@/components/icons";
 
 export default function UploadForm() {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [fileName, setFileName] = useState<string | null>(null);
   const [saving, startSaving] = useTransition();
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
@@ -62,63 +65,59 @@ export default function UploadForm() {
   const pending = uploading || saving;
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-      <label className="flex flex-col gap-1 text-sm">
+    <form onSubmit={handleSubmit} className={card("p-6 flex flex-col gap-4")}>
+      <label className={labelClass()}>
         Title
-        <input
-          name="title"
-          required
-          maxLength={120}
-          className="rounded-md border border-black/10 dark:border-white/20 px-3 py-2 bg-transparent"
-        />
+        <input name="title" required maxLength={120} className={input()} />
       </label>
 
-      <label className="flex flex-col gap-1 text-sm">
+      <label className={labelClass()}>
         Genre (optional)
-        <input
-          name="genre"
-          maxLength={40}
-          placeholder="Hip-Hop, Lo-fi, Rock..."
-          className="rounded-md border border-black/10 dark:border-white/20 px-3 py-2 bg-transparent"
-        />
+        <input name="genre" maxLength={40} placeholder="Hip-Hop, Lo-fi, Rock..." className={input()} />
       </label>
 
-      <label className="flex flex-col gap-1 text-sm">
+      <label className={labelClass()}>
         Description (optional)
-        <textarea
-          name="description"
-          rows={3}
-          maxLength={2000}
-          className="rounded-md border border-black/10 dark:border-white/20 px-3 py-2 bg-transparent"
-        />
+        <textarea name="description" rows={3} maxLength={2000} className={input()} />
       </label>
 
-      <label className="flex flex-col gap-1 text-sm">
+      <div className={labelClass()}>
         Audio file
+        <label
+          htmlFor="audio-input"
+          className="flex flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-border px-4 py-8 text-center cursor-pointer hover:border-primary/50 hover:bg-surface-hover transition-colors"
+        >
+          <UploadIcon className="size-6 text-muted" />
+          <span className="text-sm">
+            {fileName ? (
+              <span className="font-medium">{fileName}</span>
+            ) : (
+              <>
+                <span className="text-primary font-medium">Choose a file</span> or drag it here
+              </>
+            )}
+          </span>
+          <span className="text-xs text-muted">MP3, WAV, OGG, FLAC, AAC — up to 30MB</span>
+        </label>
         <input
+          id="audio-input"
           type="file"
           name="audio"
           required
           accept="audio/*"
-          className="rounded-md border border-black/10 dark:border-white/20 px-3 py-2 bg-transparent file:mr-3 file:rounded file:border-0 file:bg-violet-600 file:text-white file:px-3 file:py-1.5 file:cursor-pointer"
+          className="sr-only"
+          onChange={(e) => setFileName(e.target.files?.[0]?.name ?? null)}
         />
-        <span className="text-xs text-black/50 dark:text-white/50">
-          MP3, WAV, OGG, FLAC, AAC — up to 30MB
-        </span>
-      </label>
+      </div>
 
       <label className="flex items-center gap-2 text-sm">
-        <input type="checkbox" name="seekingHelp" />
+        <input type="checkbox" name="seekingHelp" className="size-4 rounded border-border accent-[var(--primary)]" />
         I&apos;m seeking production help on this track
       </label>
 
-      {error && <p className="text-sm text-red-600 dark:text-red-400">{error}</p>}
+      {error && <p className="text-sm text-danger">{error}</p>}
 
-      <button
-        type="submit"
-        disabled={pending}
-        className="rounded-md bg-violet-600 text-white px-4 py-2 hover:bg-violet-700 disabled:opacity-60"
-      >
+      <button type="submit" disabled={pending} className={button({ className: "mt-1" })}>
         {uploading ? "Uploading..." : saving ? "Saving..." : "Upload track"}
       </button>
     </form>
