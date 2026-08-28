@@ -15,7 +15,7 @@ export default async function UploadPage() {
   return (
     <div className="max-w-lg mx-auto">
       <h1 className="text-2xl font-bold mb-1">Upload a track</h1>
-      <p className="text-black/60 dark:text-white/60 mb-6">
+      <p className="text-muted mb-6">
         Share it with the community, or flag it as seeking production help so
         producers can find it.
       </p>

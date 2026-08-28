@@ -4,6 +4,8 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { signIn } from "next-auth/react";
+import { input, label as labelClass, button, card } from "@/lib/ui";
+import { LogoMark } from "@/components/icons";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -35,46 +37,33 @@ export default function LoginPage() {
 
   return (
     <div className="max-w-md mx-auto">
-      <h1 className="text-2xl font-bold mb-1">Welcome back</h1>
-      <p className="text-black/60 dark:text-white/60 mb-6">
-        Log in to keep sharing and connecting.
-      </p>
+      <div className="flex justify-center mb-6">
+        <LogoMark className="size-10" />
+      </div>
+      <h1 className="text-2xl font-bold text-center">Welcome back</h1>
+      <p className="text-muted text-center mt-1.5">Log in to keep sharing and connecting.</p>
 
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-        <label className="flex flex-col gap-1 text-sm">
+      <form onSubmit={handleSubmit} className={card("mt-6 p-6 flex flex-col gap-4")}>
+        <label className={labelClass()}>
           Email
-          <input
-            type="email"
-            name="email"
-            required
-            className="rounded-md border border-black/10 dark:border-white/20 px-3 py-2 bg-transparent"
-          />
+          <input type="email" name="email" required className={input()} />
         </label>
 
-        <label className="flex flex-col gap-1 text-sm">
+        <label className={labelClass()}>
           Password
-          <input
-            type="password"
-            name="password"
-            required
-            className="rounded-md border border-black/10 dark:border-white/20 px-3 py-2 bg-transparent"
-          />
+          <input type="password" name="password" required className={input()} />
         </label>
 
-        {error && <p className="text-sm text-red-600 dark:text-red-400">{error}</p>}
+        {error && <p className="text-sm text-danger">{error}</p>}
 
-        <button
-          type="submit"
-          disabled={pending}
-          className="rounded-md bg-violet-600 text-white px-4 py-2 hover:bg-violet-700 disabled:opacity-60"
-        >
+        <button type="submit" disabled={pending} className={button({ className: "mt-1" })}>
           {pending ? "Logging in..." : "Log in"}
         </button>
       </form>
 
-      <p className="mt-4 text-sm text-black/60 dark:text-white/60">
+      <p className="mt-5 text-sm text-muted text-center">
         Don&apos;t have an account?{" "}
-        <Link href="/signup" className="text-violet-600 dark:text-violet-400 hover:underline">
+        <Link href="/signup" className="text-primary hover:underline">
           Sign up
         </Link>
       </p>

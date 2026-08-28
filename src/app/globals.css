@@ -1,26 +1,109 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #fafafa;
+  --foreground: #18181b;
+
+  --surface: #ffffff;
+  --surface-hover: #f4f4f5;
+  --border: #e4e4e7;
+
+  --muted: #71717a;
+
+  --primary: #7c3aed;
+  --primary-hover: #6d28d9;
+  --primary-foreground: #ffffff;
+
+  --accent: #d97706;
+  --accent-soft: #fef3c7;
+  --accent-soft-foreground: #92400e;
+
+  --success: #16a34a;
+  --success-soft: #dcfce7;
+  --success-soft-foreground: #166534;
+
+  --danger: #dc2626;
+  --danger-soft: #fee2e2;
+  --danger-soft-foreground: #991b1b;
+
+  --ring: #a78bfa;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+  --color-surface-hover: var(--surface-hover);
+  --color-border: var(--border);
+  --color-muted: var(--muted);
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
+  --color-accent-soft-foreground: var(--accent-soft-foreground);
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+  --color-success-soft-foreground: var(--success-soft-foreground);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --color-danger-soft-foreground: var(--danger-soft-foreground);
+  --color-ring: var(--ring);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #0b0b0e;
+    --foreground: #f4f4f5;
+
+    --surface: #17171b;
+    --surface-hover: #1f1f24;
+    --border: #29292f;
+
+    --muted: #a1a1aa;
+
+    --primary: #a78bfa;
+    --primary-hover: #c4b5fd;
+    --primary-foreground: #1e1030;
+
+    --accent: #fbbf24;
+    --accent-soft: rgba(251, 191, 36, 0.16);
+    --accent-soft-foreground: #fbbf24;
+
+    --success: #4ade80;
+    --success-soft: rgba(74, 222, 128, 0.16);
+    --success-soft-foreground: #4ade80;
+
+    --danger: #f87171;
+    --danger-soft: rgba(248, 113, 113, 0.16);
+    --danger-soft-foreground: #f87171;
+
+    --ring: #a78bfa;
   }
+}
+
+* {
+  border-color: var(--border);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+}
+
+::selection {
+  background: var(--primary);
+  color: var(--primary-foreground);
+}
+
+.link-underline {
+  text-decoration-line: underline;
+  text-decoration-color: var(--border);
+  text-underline-offset: 3px;
+  transition: text-decoration-color 0.15s ease;
+}
+.link-underline:hover {
+  text-decoration-color: currentColor;
 }
